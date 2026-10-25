@@ -50,7 +50,25 @@
     script.src = "Build/Build-Web.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) { document.querySelector("#fill").style.width = (100 * p) + "%"; })
-        .then(function () { document.querySelector("#loading").remove(); canvas.focus(); })
+        .then(function (game) {
+          document.querySelector("#loading").remove(); canvas.focus();
+          // every finger on the canvas goes to the game's touch controls as well: some phone browsers never hand
+          // touches to Unity's own input (the game sat on its title, deaf to taps)
+          function forward(phase) {
+            return function (e) {
+              var r = canvas.getBoundingClientRect();
+              for (var i = 0; i < e.changedTouches.length; i++) {
+                var t = e.changedTouches[i];
+                var x = (t.clientX - r.left) * canvas.width / r.width, y = (r.bottom - t.clientY) * canvas.height / r.height;
+                game.SendMessage("Touch controls", "PageTouch", phase + " " + (t.identifier % 100000) + " " + x.toFixed(1) + " " + y.toFixed(1));
+              }
+            };
+          }
+          canvas.addEventListener("touchstart", forward("start"), { passive: true });
+          canvas.addEventListener("touchmove", forward("move"), { passive: true });
+          canvas.addEventListener("touchend", forward("end"), { passive: true });
+          canvas.addEventListener("touchcancel", forward("end"), { passive: true });
+        })
         .catch(function (e) { document.querySelector("#note").textContent = "載入失敗：" + e; });
     };
     document.body.appendChild(script);
