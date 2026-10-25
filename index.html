@@ -22,6 +22,7 @@
     #bar { width: min(420px, 70vw); height: 12px; border-radius: 6px; background: #2a2d55; overflow: hidden; border: 1px solid #c9a24a; }
     #fill { width: 0; height: 100%; background: linear-gradient(90deg, #ffd25a, #ff9d5a); }
     #note { font-size: 14px; color: #b9bde0; }
+    #note .tip { margin-top: 14px; color: #ffd25a; font-size: 15px; line-height: 1.6; }
     /* a phone held upright: ask for it sideways (the game is laid out for a wide screen) */
     #turn { display: none; position: fixed; inset: 0; z-index: 10; background: rgba(13, 15, 38, .94); color: #ffe8a8;
       font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif; font-size: 22px; flex-direction: column;
@@ -121,8 +122,15 @@
         if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(function () {});
       }).catch(function () {});
     }, { once: true, passive: true });
-    if (/iPhone|iPod/.test(navigator.userAgent) && !navigator.standalone)
-      document.querySelector("#note").innerHTML += "<br>想全螢幕玩：按「分享」→「加入主畫面」，再從主畫面的黑熊圖示打開";
+    // on a phone, not yet opened from the home screen: say how to add it there, to play full screen like an app
+    (function () {
+      var ua = navigator.userAgent;
+      var app = navigator.standalone || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches;
+      var tip = /iPhone|iPad|iPod/.test(ua) ? "按下方的「分享」→「加入主畫面」"
+              : /Android/.test(ua) ? "按右上角的「⋮」→「加到主畫面」" : "";
+      if (app || !tip) return;
+      document.querySelector("#note").innerHTML += "<div class=\"tip\">小提示：" + tip + "，<br>以後從主畫面的黑熊圖示打開，就能像 App 一樣全螢幕玩！</div>";
+    })();
   </script>
 </body>
 </html>
