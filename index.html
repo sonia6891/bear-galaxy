@@ -50,6 +50,11 @@
       padding: 14px 34px; border-radius: 40px; text-decoration: none; }
     #outside .small { font-size: 15px; color: #b9bde0; }
     #outside button { background: none; border: 1px solid #6a6fa8; color: #b9bde0; font-size: 15px; padding: 8px 20px; border-radius: 20px; }
+    #share { display: none; position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 15; border: 3px solid #fff;
+      background: linear-gradient(#ffd25a, #ff9d5a); color: #3c190a; font-size: 22px; font-weight: bold; padding: 12px 34px;
+      border-radius: 32px; box-shadow: 0 4px 14px rgba(0, 0, 0, .45); font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
+    #toast { display: none; position: fixed; left: 50%; bottom: 150px; transform: translateX(-50%); z-index: 16; background: rgba(13, 15, 38, .92);
+      color: #ffe8a8; padding: 10px 18px; border-radius: 12px; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -88,9 +93,9 @@
   <script>
     var canvas = document.querySelector("#unity-canvas");
     var config = {
-      dataUrl: "Build/37af91646b07a0b937691521c6744e3f.data.unityweb",
-      frameworkUrl: "Build/d44123b2ee90d3ab4083161562525f6f.framework.js.unityweb",
-      codeUrl: "Build/95664d1fd4c9be963d9210c94427a461.wasm.unityweb",
+      dataUrl: "Build/6cfe31e287fb0ae30625062e2e33a677.data.unityweb",
+      frameworkUrl: "Build/e5cc34aab0c89775c3e8e266b31c767a.framework.js.unityweb",
+      codeUrl: "Build/18d494a015299528a0a70eeacf5886c6.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "BearGalaxy",
       productName: "黑熊大冒險",
@@ -98,7 +103,7 @@
       devicePixelRatio: Math.max(1, Math.min(2, Math.floor(window.devicePixelRatio || 1))), // whole numbers only (at 1.5, a laptop at 150 % or many phones, Unity draws the picture too big and off-centre), and at most 2, which a phone keeps up with
     };
     var script = document.createElement("script");
-    script.src = "Build/da29e53775b90ccdf887327fca3da1b9.loader.js";
+    script.src = "Build/dc4b4355f8a028228060a363c6889c24.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) { document.querySelector("#fill").style.width = (100 * p) + "%"; document.querySelector("#pct").textContent = Math.floor(100 * p) + "%"; })
         .then(function (game) {
@@ -147,6 +152,27 @@
       for (var i = 0; i < steps.length; i++) html += "<div>" + (i + 1) + ". " + steps[i] + "</div>";
       html += "<div>之後從主畫面的黑熊圖示打開就好！</div></div>";
       document.querySelector("#note").innerHTML += html;
+    })();
+  </script>
+  <!-- the win card's "分享成績": HTML, so the phone's share sheet opens straight from the tap (WebShare.cs shows and hides it) -->
+  <button id="share" type="button">分享成績</button>
+  <div id="toast"></div>
+  <script>
+    window.bgShare = (function () {
+      var button = document.getElementById("share"), toast = document.getElementById("toast"), text = "";
+      var url = "https://sonia6891.github.io/bear-galaxy/";
+      function say(s) { toast.textContent = s; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
+      button.onclick = function () {
+        if (navigator.share) { navigator.share({ title: "黑熊大冒險", text: text, url: url }).catch(function () {}); return; }
+        // no share sheet (a computer): copy the result, then open Facebook's share box for the link
+        var all = text + " " + url;
+        if (navigator.clipboard) navigator.clipboard.writeText(all).then(function () { say("成績已複製，貼到 Facebook 的貼文裡吧！"); }, function () {});
+        window.open("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url), "_blank");
+      };
+      return {
+        show: function (t) { text = t; button.style.display = "block"; },
+        hide: function () { button.style.display = "none"; }
+      };
     })();
   </script>
 </body>
