@@ -23,7 +23,7 @@
   <meta name="description" content="在圓滾滾的小星球間跳躍，收集音符，打倒大魔王！打開網頁就能玩，手機也可以。">
   <title>黑熊大冒險</title>
   <style>
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0d0f26; }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0d0f26; overscroll-behavior: none; position: fixed; }
     #unity-canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; /* the visible window, also on a phone whose bars come and go */ background: #0d0f26; outline: none;
       touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } /* fingers play, they don't scroll or zoom */
     #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -35,12 +35,9 @@
     #pct { font-size: 18px; color: #ffd25a; margin-top: -8px; }
     #note .tip { margin-top: 16px; color: #ffd25a; font-size: 15px; line-height: 1.7; text-align: left; display: table; margin-left: auto; margin-right: auto; } /* its own block under the loading line, centred, the steps aligned left */
     #note .tip b { display: block; font-size: 17px; margin-bottom: 4px; }
-    /* a phone held upright: ask for it sideways (the game is laid out for a wide screen) */
-    #turn { display: none; position: fixed; inset: 0; z-index: 10; background: rgba(13, 15, 38, .94); color: #ffe8a8;
-      font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif; font-size: 22px; flex-direction: column;
-      align-items: center; justify-content: center; gap: 14px; text-align: center; }
-    #turn b { font-size: 54px; }
-    @media (orientation: portrait) and (pointer: coarse) { #turn { display: flex; } }
+    /* a phone held upright: the game turned sideways at once (sideways(), below), so it plays with the phone turned
+       even when the phone is locked upright */
+    .sideways { inset: auto !important; transform-origin: 0 0; transform: rotate(90deg); }
     /* the card that sends players out of Facebook's / LINE's own browser */
     #outside { display: none; position: fixed; inset: 0; z-index: 20; background: rgba(13, 15, 38, .96); color: #ffe8a8;
       font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif; font-size: 20px; flex-direction: column;
@@ -88,18 +85,35 @@
     })();
   </script>
   <canvas id="unity-canvas" tabindex="-1"></canvas>
-  <div id="turn"><b>↻</b>請把手機橫過來玩</div>
   <div id="loading"><h1>黑熊大冒險</h1><div id="bar"><div id="fill"></div></div><div id="pct">0%</div><div id="note">載入中…（第一次比較久）</div></div>
   <script>
     var canvas = document.querySelector("#unity-canvas");
+    // upright on a phone: the canvas (and the loading card) laid out wide and turned a quarter round, its left edge
+    // down the screen's right side
+    var turned = false, ratio = Math.max(1, Math.min(2, Math.floor(window.devicePixelRatio || 1)));
+    function sideways() {
+      turned = matchMedia("(pointer: coarse)").matches && innerHeight > innerWidth;
+      [canvas, document.querySelector("#loading")].forEach(function (el) {
+        if (!el) return;
+        el.classList.toggle("sideways", turned);
+        el.style.width = turned ? innerHeight + "px" : ""; el.style.height = turned ? innerWidth + "px" : "";
+        el.style.setProperty("left", turned ? innerWidth + "px" : "", turned ? "important" : "");
+        el.style.setProperty("top", turned ? "0px" : "", turned ? "important" : "");
+      });
+      // the picture's own size, wide even when turned (Unity would take it from the turned box, upright)
+      var w = turned ? innerHeight : canvas.clientWidth, h = turned ? innerWidth : canvas.clientHeight;
+      canvas.width = Math.round(w * ratio); canvas.height = Math.round(h * ratio);
+    }
+    sideways(); addEventListener("resize", sideways); addEventListener("orientationchange", function () { setTimeout(sideways, 200); });
     var config = {
-      dataUrl: "Build/408bfb75992bfed29cc8a3b56ef9404e.data.unityweb",
+      dataUrl: "Build/b05185047c70ce1558415c874f2c0886.data.unityweb",
       frameworkUrl: "Build/e5cc34aab0c89775c3e8e266b31c767a.framework.js.unityweb",
-      codeUrl: "Build/d98c459bb13b3eb8bb20fd10833d22d6.wasm.unityweb",
+      codeUrl: "Build/0e6b269ed05822328e16f119bb48df79.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "BearGalaxy",
       productName: "黑熊大冒險",
       productVersion: "0.1.0",
+      matchWebGLToCanvasSize: false, // the page sizes the picture (sideways(), above)
       devicePixelRatio: Math.max(1, Math.min(2, Math.floor(window.devicePixelRatio || 1))), // whole numbers only (at 1.5, a laptop at 150 % or many phones, Unity draws the picture too big and off-centre), and at most 2, which a phone keeps up with
     };
     var script = document.createElement("script");
@@ -117,12 +131,17 @@
               for (var i = 0; i < e.changedTouches.length; i++) {
                 var t = e.changedTouches[i];
                 var x = (t.clientX - r.left) * canvas.width / r.width, y = (r.bottom - t.clientY) * canvas.height / r.height;
+                if (turned) { // the picture is turned: down the screen is along the canvas, across it is up the canvas
+                  x = t.clientY * canvas.width / innerHeight; y = t.clientX * canvas.height / innerWidth;
+                }
                 game.SendMessage("Touch controls", "PageTouch", phase + " " + (t.identifier % 100000) + " " + x.toFixed(1) + " " + y.toFixed(1));
               }
             };
           }
           canvas.addEventListener("touchstart", forward("start"), { passive: true });
-          canvas.addEventListener("touchmove", forward("move"), { passive: true });
+          // not passive, and kept from the browser: Safari took an up-or-down swipe for scrolling the page (or showing its
+          // bars) and stopped sending it, so the camera never tilted
+          canvas.addEventListener("touchmove", function (e) { e.preventDefault(); forward("move")(e); }, { passive: false });
           canvas.addEventListener("touchend", forward("end"), { passive: true });
           canvas.addEventListener("touchcancel", forward("end"), { passive: true });
         })
@@ -131,6 +150,7 @@
     document.body.appendChild(script);
     canvas.addEventListener("click", function () { canvas.focus(); });
     canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    document.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
     // on a phone the first touch also takes the whole screen, sideways (where a page may: Android; an iPhone only
     // does that for a page opened from the home screen, so the loading card says how)
     canvas.addEventListener("touchend", function () {
