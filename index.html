@@ -7,21 +7,21 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="黑熊大冒險">
+  <meta name="apple-mobile-web-app-title" content="GoGo黑熊">
   <meta name="theme-color" content="#0d0f26">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-180.png">
   <!-- what Facebook / LINE show when the link is shared -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://sonia6891.github.io/bear-galaxy/">
-  <meta property="og:title" content="黑熊大冒險">
+  <meta property="og:title" content="GoGo黑熊">
   <meta property="og:description" content="在圓滾滾的小星球間跳躍，收集音符，打倒大魔王！打開網頁就能玩，手機也可以。">
   <meta property="og:image" content="https://sonia6891.github.io/bear-galaxy/og.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="description" content="在圓滾滾的小星球間跳躍，收集音符，打倒大魔王！打開網頁就能玩，手機也可以。">
-  <title>黑熊大冒險</title>
+  <title>GoGo黑熊</title>
   <style>
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0d0f26; overscroll-behavior: none; position: fixed; }
     #unity-canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; /* the visible window, also on a phone whose bars come and go */ background: #0d0f26; outline: none;
@@ -85,7 +85,7 @@
     })();
   </script>
   <canvas id="unity-canvas" tabindex="-1"></canvas>
-  <div id="loading"><h1>黑熊大冒險</h1><div id="bar"><div id="fill"></div></div><div id="pct">0%</div><div id="note">載入中…（第一次比較久）</div></div>
+  <div id="loading"><h1>GoGo黑熊</h1><div id="bar"><div id="fill"></div></div><div id="pct">0%</div><div id="note">載入中…（第一次比較久）</div></div>
   <script>
     var canvas = document.querySelector("#unity-canvas");
     // upright on a phone: the canvas (and the loading card) laid out wide and turned a quarter round, its left edge
@@ -106,18 +106,18 @@
     }
     sideways(); addEventListener("resize", sideways); addEventListener("orientationchange", function () { setTimeout(sideways, 200); });
     var config = {
-      dataUrl: "Build/b05185047c70ce1558415c874f2c0886.data.unityweb",
+      dataUrl: "Build/0212a1b76f1c1d23d024b1ad09d8577e.data.unityweb",
       frameworkUrl: "Build/e5cc34aab0c89775c3e8e266b31c767a.framework.js.unityweb",
-      codeUrl: "Build/0e6b269ed05822328e16f119bb48df79.wasm.unityweb",
+      codeUrl: "Build/849aa74e8be835e5fff55399a5e1e66e.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "BearGalaxy",
-      productName: "黑熊大冒險",
+      productName: "GoGo黑熊",
       productVersion: "0.1.0",
       matchWebGLToCanvasSize: false, // the page sizes the picture (sideways(), above)
       devicePixelRatio: Math.max(1, Math.min(2, Math.floor(window.devicePixelRatio || 1))), // whole numbers only (at 1.5, a laptop at 150 % or many phones, Unity draws the picture too big and off-centre), and at most 2, which a phone keeps up with
     };
     var script = document.createElement("script");
-    script.src = "Build/dc4b4355f8a028228060a363c6889c24.loader.js";
+    script.src = "Build/f311a230c5e40f093367248ce4ea2a87.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) { document.querySelector("#fill").style.width = (100 * p) + "%"; document.querySelector("#pct").textContent = Math.floor(100 * p) + "%"; })
         .then(function (game) {
@@ -183,7 +183,7 @@
       var url = "https://sonia6891.github.io/bear-galaxy/";
       function say(s) { toast.textContent = s; toast.style.display = "block"; setTimeout(function () { toast.style.display = "none"; }, 3500); }
       button.onclick = function () {
-        if (navigator.share) { navigator.share({ title: "黑熊大冒險", text: text, url: url }).catch(function () {}); return; }
+        if (navigator.share) { navigator.share({ title: "GoGo黑熊", text: text, url: url }).catch(function () {}); return; }
         // no share sheet (a computer): copy the result, then open Facebook's share box for the link
         var all = text + " " + url;
         if (navigator.clipboard) navigator.clipboard.writeText(all).then(function () { say("成績已複製，貼到 Facebook 的貼文裡吧！"); }, function () {});
