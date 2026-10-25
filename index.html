@@ -22,7 +22,8 @@
     #bar { width: min(420px, 70vw); height: 12px; border-radius: 6px; background: #2a2d55; overflow: hidden; border: 1px solid #c9a24a; }
     #fill { width: 0; height: 100%; background: linear-gradient(90deg, #ffd25a, #ff9d5a); }
     #note { font-size: 14px; color: #b9bde0; }
-    #note .tip { margin-top: 14px; color: #ffd25a; font-size: 15px; line-height: 1.6; }
+    #note .tip { margin-top: 16px; color: #ffd25a; font-size: 15px; line-height: 1.7; text-align: left; display: inline-block; }
+    #note .tip b { display: block; font-size: 17px; margin-bottom: 4px; }
     /* a phone held upright: ask for it sideways (the game is laid out for a wide screen) */
     #turn { display: none; position: fixed; inset: 0; z-index: 10; background: rgba(13, 15, 38, .94); color: #ffe8a8;
       font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif; font-size: 22px; flex-direction: column;
@@ -91,6 +92,7 @@
       createUnityInstance(canvas, config, function (p) { document.querySelector("#fill").style.width = (100 * p) + "%"; })
         .then(function (game) {
           document.querySelector("#loading").remove(); canvas.focus();
+          if (phoneOS && !asApp) game.SendMessage("Touch controls", "SetPhone", phoneOS);
           // every finger on the canvas goes to the game's touch controls as well: some phone browsers never hand
           // touches to Unity's own input (the game sat on its title, deaf to taps)
           function forward(phase) {
@@ -122,14 +124,18 @@
         if (screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(function () {});
       }).catch(function () {});
     }, { once: true, passive: true });
-    // on a phone, not yet opened from the home screen: say how to add it there, to play full screen like an app
+    // on a phone, not yet opened from the home screen: how to add it there, step by step, to play full screen like an app
+    var phoneOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ? "ios" : /Android/.test(navigator.userAgent) ? "android" : "";
+    var asApp = navigator.standalone || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches;
     (function () {
-      var ua = navigator.userAgent;
-      var app = navigator.standalone || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches;
-      var tip = /iPhone|iPad|iPod/.test(ua) ? "按下方的「分享」→「加入主畫面」"
-              : /Android/.test(ua) ? "按右上角的「⋮」→「加到主畫面」" : "";
-      if (app || !tip) return;
-      document.querySelector("#note").innerHTML += "<div class=\"tip\">小提示：" + tip + "，<br>以後從主畫面的黑熊圖示打開，就能像 App 一樣全螢幕玩！</div>";
+      if (!phoneOS || asApp) return;
+      var steps = phoneOS == "ios"
+        ? ["點畫面下方的「分享」按鈕（方框加向上的箭頭）", "往下滑，點「加入主畫面」", "點右上角「新增」"]
+        : ["點右上角的「⋮」", "點「加到主畫面」（有些手機叫「安裝應用程式」）", "點「新增」或「安裝」"];
+      var html = "<div class=\"tip\"><b>像 App 一樣全螢幕玩：加入主畫面</b>";
+      for (var i = 0; i < steps.length; i++) html += "<div>" + (i + 1) + ". " + steps[i] + "</div>";
+      html += "<div>之後從主畫面的黑熊圖示打開就好！</div></div>";
+      document.querySelector("#note").innerHTML += html;
     })();
   </script>
 </body>
