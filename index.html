@@ -118,9 +118,9 @@
     }
     sideways(); addEventListener("resize", sideways); addEventListener("orientationchange", function () { setTimeout(sideways, 200); });
     var config = {
-      dataUrl: "Build/9364075b506f9c35d351cbc1f49e8561.data.unityweb",
+      dataUrl: "Build/23e69e64c5f390f6f6ce6434727957fd.data.unityweb",
       frameworkUrl: "Build/dbf785f3d2ad9d6bfe47022aadfdfe65.framework.js.unityweb",
-      codeUrl: "Build/a7d881793bc8d1c863b629a627873a46.wasm.unityweb",
+      codeUrl: "Build/d03c1156efa880f50de2d5423f44d1be.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "BearGalaxy",
       productName: "GoGo黑熊",
@@ -129,7 +129,7 @@
       devicePixelRatio: Math.max(1, Math.min(2, Math.floor(window.devicePixelRatio || 1))), // whole numbers only (at 1.5, a laptop at 150 % or many phones, Unity draws the picture too big and off-centre), and at most 2, which a phone keeps up with
     };
     var script = document.createElement("script");
-    script.src = "Build/72a7651c3bae746038f02bd387d00cf5.loader.js";
+    script.src = "Build/303a4c6618f46ec8e230175a84cbfe5c.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) { document.querySelector("#fill").style.width = (100 * p) + "%"; document.querySelector("#pct").textContent = Math.floor(100 * p) + "%"; })
         .then(function (game) {
