@@ -116,11 +116,11 @@
       var w = turned ? innerHeight : canvas.clientWidth, h = turned ? innerWidth : canvas.clientHeight;
       canvas.width = Math.round(w * ratio); canvas.height = Math.round(h * ratio);
     }
-    sideways(); addEventListener("resize", sideways); addEventListener("orientationchange", function () { setTimeout(sideways, 200); });
+    sideways(); addEventListener("resize", sideways); addEventListener("orientationchange", function () { [200, 600, 1200].forEach(function (ms) { setTimeout(sideways, ms); }); });
     var config = {
-      dataUrl: "Build/23e69e64c5f390f6f6ce6434727957fd.data.unityweb",
+      dataUrl: "Build/703df33b3208478c6af73b7d99f0d3cc.data.unityweb",
       frameworkUrl: "Build/dbf785f3d2ad9d6bfe47022aadfdfe65.framework.js.unityweb",
-      codeUrl: "Build/d03c1156efa880f50de2d5423f44d1be.wasm.unityweb",
+      codeUrl: "Build/9f8eac61d26f42ae334c1ddfec8eef0f.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "BearGalaxy",
       productName: "GoGo黑熊",
@@ -129,7 +129,7 @@
       devicePixelRatio: Math.max(1, Math.min(2, Math.floor(window.devicePixelRatio || 1))), // whole numbers only (at 1.5, a laptop at 150 % or many phones, Unity draws the picture too big and off-centre), and at most 2, which a phone keeps up with
     };
     var script = document.createElement("script");
-    script.src = "Build/303a4c6618f46ec8e230175a84cbfe5c.loader.js";
+    script.src = "Build/ec5cda75a61cf19126ba8c2f403c43e5.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) { document.querySelector("#fill").style.width = (100 * p) + "%"; document.querySelector("#pct").textContent = Math.floor(100 * p) + "%"; })
         .then(function (game) {
@@ -142,12 +142,18 @@
               var r = canvas.getBoundingClientRect();
               for (var i = 0; i < e.changedTouches.length; i++) {
                 var t = e.changedTouches[i];
-                var x = (t.clientX - r.left) * canvas.width / r.width, y = (r.bottom - t.clientY) * canvas.height / r.height;
-                if (turned) { // the picture is turned: down the screen is along the canvas, across it is up the canvas
-                  x = t.clientY * canvas.width / innerHeight; y = t.clientX * canvas.height / innerWidth;
+                // where on the picture, as a share of it (0..1 from its bottom left), from how the canvas lies right now
+                // (not from what the page last thought: a phone turned from upright to sideways mapped a left thumb to
+                // the right half, which turns the camera)
+                var x = (t.clientX - r.left) / r.width, y = (r.bottom - t.clientY) / r.height;
+                if (canvas.classList.contains("sideways")) { // turned: down the screen is along the picture, across it is up it
+                  x = (t.clientY - r.top) / r.height; y = (t.clientX - r.left) / r.width;
                 }
-                game.SendMessage("Touch controls", "PageTouch", phase + " " + (t.identifier % 100000) + " " + x.toFixed(1) + " " + y.toFixed(1));
+                game.SendMessage("Touch controls", "PageTouch", phase + " " + (t.identifier % 100000) + " " + x.toFixed(4) + " " + y.toFixed(4));
               }
+              // and which fingers are down now: one whose lift went unheard (a turn of the phone) is let go
+              var ids = []; for (var j = 0; j < e.touches.length; j++) ids.push(e.touches[j].identifier % 100000);
+              game.SendMessage("Touch controls", "PageTouches", ids.join(","));
             };
           }
           canvas.addEventListener("touchstart", forward("start"), { passive: true });
